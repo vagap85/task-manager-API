@@ -1,0 +1,29 @@
+services:
+  backend:
+    build: ./backend
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app
+    environment:
+      - PYTHONUNBUFFERED=1
+      # Для разработки разрешим все CORS
+      - CORS_ORIGINS=http://localhost:3000,http://frontend:3000
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules  # Важно для React
+    environment:
+      # Ключевое изменение: используем имя сервиса backend
+      - REACT_APP_API_URL=http://backend:8000
+      # или для Vite:
+      # - VITE_API_URL=http://backend:8000
+      - CHOKIDAR_USEPOLLING=true  # Для hot reload в Docker
+    depends_on:
+      - backend
+    # React dev server слушает все интерфейсы
+    command: npm start -- --host 0.0.0.0
